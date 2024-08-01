@@ -27,6 +27,9 @@ func NewGateway(url string) *Gateway {
 }
 
 func (g *Gateway) GetModels() map[string]string {
+	// TODO: on gateway creation fetch from gateway and store
+	// then return them here
+	// TODO: then we can also add a check that the gateway has the capabilities
 	return g.defaultModels
 }
 

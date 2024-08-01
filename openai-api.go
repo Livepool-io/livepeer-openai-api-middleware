@@ -8,13 +8,6 @@ import (
 	"github.com/livepool-io/openai-middleware/server"
 )
 
-// 1. Set up a new Golang project for the middleware.
-// 2. Create endpoints that mirror OpenAI's chat completion API.
-// 3. Translate incoming OpenAI-style requests to your API's format.
-// 4. Forward the translated request to your existing API.
-// 5. Transform the response back to OpenAI's format.
-// 6. Handle both streaming and non-streaming responses.
-
 func main() {
 	gatewayURL := flag.String("gateway", "http://your-api-host", "The URL of the gateway API")
 	flag.Parse()
