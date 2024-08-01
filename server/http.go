@@ -71,7 +71,7 @@ func (s *Server) handleChatCompletion(c *gin.Context) {
 
 		// Handle streaming response and
 		// forward stream to caller in OpenAPI format
-		if err := s.gateway.HandleStreamingResponse(c.Writer, resp); err != nil {
+		if err := s.gateway.HandleStreamingResponse(c.Writer, c.Request, resp); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
