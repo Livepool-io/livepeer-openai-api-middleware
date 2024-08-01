@@ -2,10 +2,12 @@
 
 This project provides middleware that mimics the OpenAI API for the Livepeer AI gateway. This allows developers to use Livepeer AI gateways using the `openai` library, creating a developer experience AI application developers are accustomed with.
 
-**As HTTP Server**
+#### As HTTP Server
+
 The program runs an HTTP server connected to a _Livepeer AI gateway_. It takes user requests in OpenAI format, forwards them to the specified Livepeer AI Gateway, and returns the response in OpenAI format to the caller.
 
-**As Package**
+#### As Package
+
 The `common` package exposes helpers that help you transform between OpenAI and and Livepeer's AI Worker types.
 
 - `func TransformRequest(openAIReq models.OpenAIRequest) (*worker.LlmGenerateFormdataRequestBody, error)`
