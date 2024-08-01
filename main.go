@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/livepool-io/openai-middleware/middleware"
@@ -15,7 +16,9 @@ import (
 // 6. Handle both streaming and non-streaming responses.
 
 func main() {
-	gateway := middleware.NewGateway("http://your-api-host")
+	gatewayURL := flag.String("gateway", "http://your-api-host", "The URL of the gateway API")
+	flag.Parse()
+	gateway := middleware.NewGateway(*gatewayURL)
 	server, err := server.NewServer(gateway)
 	if err != nil {
 		log.Fatalf("Failed to create server: %v", err)
