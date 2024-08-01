@@ -1,3 +1,6 @@
+# Built binary
+openai-api
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
