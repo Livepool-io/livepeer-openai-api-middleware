@@ -36,19 +36,32 @@ func historyFromMessages(messages []models.OpenAIMessage) (*string, error) {
 }
 
 func TransformRequest(openAIReq models.OpenAIRequest) (*worker.LlmGenerateFormdataRequestBody, error) {
-	his, err := historyFromMessages(openAIReq.Messages)
-	if err != nil {
-		return nil, err
-	}
-	temp := float32(openAIReq.Temperature)
+
 	llmReq := worker.LlmGenerateFormdataRequestBody{
-		ModelId:     &openAIReq.Model,
-		Prompt:      openAIReq.Messages[len(openAIReq.Messages)-1].Content,
-		History:     his,
-		SystemMsg:   &openAIReq.Messages[0].Content,
-		Stream:      &openAIReq.Stream,
-		MaxTokens:   &openAIReq.MaxTokens,
-		Temperature: &temp,
+		ModelId: &openAIReq.Model,
+		Prompt:  openAIReq.Messages[len(openAIReq.Messages)-1].Content,
+		Stream:  &openAIReq.Stream,
+	}
+
+	if openAIReq.Temperature != 0 {
+		temp := float32(openAIReq.Temperature)
+		llmReq.Temperature = &temp
+	}
+
+	if len(openAIReq.Messages) > 1 {
+		llmReq.SystemMsg = &openAIReq.Messages[0].Content
+	}
+
+	if len(openAIReq.Messages) > 2 {
+		his, err := historyFromMessages(openAIReq.Messages)
+		if err != nil {
+			return nil, err
+		}
+		llmReq.History = his
+	}
+
+	if openAIReq.MaxTokens != 0 {
+		llmReq.MaxTokens = &openAIReq.MaxTokens
 	}
 
 	return &llmReq, nil
