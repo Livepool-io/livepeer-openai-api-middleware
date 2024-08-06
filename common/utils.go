@@ -40,12 +40,15 @@ func TransformRequest(openAIReq models.OpenAIRequest) (*worker.LlmGenerateFormda
 	if err != nil {
 		return nil, err
 	}
+	temp := float32(openAIReq.Temperature)
 	llmReq := worker.LlmGenerateFormdataRequestBody{
-		Prompt:    openAIReq.Messages[len(openAIReq.Messages)-1].Content,
-		History:   his,
-		SystemMsg: &openAIReq.Messages[0].Content,
-		Stream:    &openAIReq.Stream,
-		MaxTokens: &openAIReq.MaxTokens,
+		ModelId:     &openAIReq.Model,
+		Prompt:      openAIReq.Messages[len(openAIReq.Messages)-1].Content,
+		History:     his,
+		SystemMsg:   &openAIReq.Messages[0].Content,
+		Stream:      &openAIReq.Stream,
+		MaxTokens:   &openAIReq.MaxTokens,
+		Temperature: &temp,
 	}
 
 	return &llmReq, nil
