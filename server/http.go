@@ -33,7 +33,7 @@ func (s *Server) Start(port string) error {
 	r.GET("/v1/models", s.handleModels)
 	r.GET("/v1/embeddings", s.handleEmbeddings)
 	r.GET("/health", s.handleHealth)
-	err := r.Run(":8080")
+	err := r.Run(":" + port)
 	if err != nil {
 		return err
 	}
