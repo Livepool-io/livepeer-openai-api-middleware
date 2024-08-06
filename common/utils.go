@@ -16,6 +16,10 @@ import (
 )
 
 func historyFromMessages(messages []models.OpenAIMessage) (*string, error) {
+	if len(messages) <= 1 {
+		str := "[]"
+		return &str, nil
+	}
 	messages = messages[1 : len(messages)-1]
 	var history []*string
 	for _, message := range messages {
