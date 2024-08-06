@@ -62,7 +62,6 @@ func (s *Server) handleChatCompletion(c *gin.Context) {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
-	defer resp.Body.Close()
 
 	if openAIReq.Stream {
 		c.Header("Content-Type", "text/event-stream")

@@ -48,7 +48,6 @@ func (g *Gateway) PostLlmGenerate(req worker.LlmGenerateFormdataRequestBody) (*h
 	if err != nil {
 		return nil, err
 	}
-	httpReq.Header.Set("Content-Type", "multipart/form-data")
 
 	client := &http.Client{}
 	return client.Do(httpReq)
