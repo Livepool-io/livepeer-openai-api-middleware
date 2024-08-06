@@ -4,6 +4,8 @@ go 1.21.6
 
 require (
 	github.com/gin-gonic/gin v1.10.0
+	github.com/golang/glog v1.2.2
+	github.com/google/uuid v1.6.0
 	github.com/livepeer/ai-worker v0.1.1
 )
 
@@ -33,8 +35,6 @@ require (
 	github.com/go-playground/validator/v10 v10.22.0 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/glog v1.2.2 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/invopop/yaml v0.2.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -67,4 +67,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/livepeer/ai-worker => /Users/nico/livepool/ai-worker
+replace github.com/livepeer/ai-worker => github.com/Livepool-io/ai-worker v0.0.0-20240806021536-468d65dca834
