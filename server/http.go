@@ -14,22 +14,30 @@ import (
 
 type Server struct {
 	// We can add fields here later if needed, such as a database connection
+	auth    *middleware.Auth
 	gateway *middleware.Gateway
 }
 
-func NewServer(gateway *middleware.Gateway) (*Server, error) {
+func NewServer(auth *middleware.Auth, gateway *middleware.Gateway) (*Server, error) {
 	if gateway == nil {
 		return nil, fmt.Errorf("gateway is required")
 	}
+
 	return &Server{
 		gateway: gateway,
+		auth:    auth,
 	}, nil
 }
 
 func (s *Server) Start(port string) error {
 	r := gin.Default()
-	r.POST("/v1/chat/completions", s.handleChatCompletion)
-	r.POST("/v1/completions", s.handleCompletion)
+	// Apply auth middleware to protected routes
+	protected := r.Group("/")
+	protected.Use(s.auth.AuthRequired())
+	{
+		protected.POST("/v1/chat/completions", s.handleChatCompletion)
+		protected.POST("/v1/completions", s.handleCompletion)
+	}
 	r.GET("/v1/models", s.handleModels)
 	r.GET("/v1/embeddings", s.handleEmbeddings)
 	r.GET("/health", s.handleHealth)
