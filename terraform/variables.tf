@@ -62,5 +62,5 @@ variable "health_check_port" {
 variable "domain_name" {
   description = "Domain name for the application"
   type        = string
-  default     = "yourdomain.com"  # Replace with your actual domain
+  default     = "joinhive.ai"  # Replace with your actual domain
 }
