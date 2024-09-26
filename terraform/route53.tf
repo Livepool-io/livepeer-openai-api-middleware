@@ -1,22 +1,26 @@
-# Create the main Route53 zone
+locals {
+  loadbalancer_dns_names = {
+    "us-east-1"      = module.loadbalancer_us_east_1.lb_dns_name
+    "us-west-2"      = module.loadbalancer_us_west_2.lb_dns_name
+    "eu-central-1"   = module.loadbalancer_eu_central_1.lb_dns_name
+    "ap-northeast-1" = module.loadbalancer_ap_northeast_1.lb_dns_name
+  }
+
+  loadbalancer_zone_ids = {
+    "us-east-1"      = module.loadbalancer_us_east_1.lb_zone_id
+    "us-west-2"      = module.loadbalancer_us_west_2.lb_zone_id
+    "eu-central-1"   = module.loadbalancer_eu_central_1.lb_zone_id
+    "ap-northeast-1" = module.loadbalancer_ap_northeast_1.lb_zone_id
+  }
+}
+
+
+# Create Route53 Hosted Zone
 resource "aws_route53_zone" "main" {
   name = var.domain_name
 }
 
-# Create a record for the gateway subdomain
-resource "aws_route53_record" "gateway" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "gateway.${var.domain_name}"
-  type    = "A"
-
-  alias {
-    name                   = aws_route53_record.regional_gateway[var.primary_region].name
-    zone_id                = aws_route53_record.regional_gateway[var.primary_region].zone_id
-    evaluate_target_health = true
-  }
-}
-
-# Create regional records for the gateway
+# Regional Gateway Records
 resource "aws_route53_record" "regional_gateway" {
   for_each = toset(var.regions)
 
@@ -25,50 +29,24 @@ resource "aws_route53_record" "regional_gateway" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.main[each.key].dns_name
-    zone_id                = aws_lb.main[each.key].zone_id
+    name                   = local.loadbalancer_dns_names[each.key]
+    zone_id                = local.loadbalancer_zone_ids[each.key]
     evaluate_target_health = true
   }
 }
 
-# Create a latency-based routing policy
+# Latency-Based Routing Record for the Gateway
 resource "aws_route53_record" "gateway_latency" {
   for_each = toset(var.regions)
 
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "gateway.${var.domain_name}"
-  type    = "A"
-
-  latency_routing_policy {
-    region = each.key
-  }
+  zone_id        = aws_route53_zone.main.zone_id
+  name           = "gateway.${var.domain_name}"
+  type           = "A"
+  set_identifier = each.key
 
   alias {
-    name                   = aws_lb.main[each.key].dns_name
-    zone_id                = aws_lb.main[each.key].zone_id
+    name                   = local.loadbalancer_dns_names[each.key]
+    zone_id                = local.loadbalancer_zone_ids[each.key]
     evaluate_target_health = true
   }
-
-  set_identifier = each.key
-}
-
-# Create the certificate validation records
-resource "aws_route53_record" "cert_validation" {
-  for_each = {
-    for dvo in flatten([for cert in aws_acm_certificate.main : cert.domain_validation_options]) : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-      region = split("-", dvo.domain_name)[0]
-    }
-  }
-
-  allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
-  ttl             = 60
-  type            = each.value.type
-  zone_id         = aws_route53_zone.main.zone_id
-
-  provider = aws[each.value.region]
 }

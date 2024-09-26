@@ -1,12 +1,19 @@
-# Define a provider for each region
 provider "aws" {
-  for_each = toset(var.regions)
-  alias    = replace(each.key, "-", "_")
-  region   = each.key
+  alias  = "us-east-1"
+  region = "us-east-1"
 }
 
+provider "aws" {
+  alias  = "us-west-2"
+  region = "us-west-2"
+}
 
-# This providers.tf file does the following:
-# It specifies the required providers (in this case, AWS) and the version we want to use.
-# It defines an AWS provider for each of our four regions.
-# Each provider has an alias that we'll use to reference it when creating region-specific resources.
+provider "aws" {
+  alias  = "eu-central-1"
+  region = "eu-central-1"
+}
+
+provider "aws" {
+  alias  = "ap-northeast-1"
+  region = "ap-northeast-1"
+}
