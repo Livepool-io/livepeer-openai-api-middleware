@@ -149,7 +149,6 @@ resource "aws_autoscaling_group" "main" {
   vpc_zone_identifier = var.subnet_ids
   depends_on = [aws_launch_template.main]
 
-
   launch_template {
     id      = aws_launch_template.main.id
     version = "$Latest"

@@ -37,3 +37,8 @@ variable "route53_zone_id" {
   description = "The ID of the Route53 hosted zone"
   type        = string
 }
+
+variable "certificate_arn" {
+  description = "ARN of the ACM certificate to use for the load balancer"
+  type        = string
+}

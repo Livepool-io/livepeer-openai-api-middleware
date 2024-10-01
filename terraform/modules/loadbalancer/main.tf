@@ -3,7 +3,7 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
-      configuration_aliases = [aws.region]
+      configuration_aliases = [aws.region, aws.us-east-1]
     }
   }
 }
@@ -86,7 +86,7 @@ resource "aws_lb_listener" "https" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate_validation.main.certificate_arn
+  certificate_arn   = var.certificate_arn
 
   default_action {
     type             = "forward"
@@ -110,54 +110,5 @@ resource "aws_lb_listener" "http" {
       protocol    = "HTTPS"
       status_code = "HTTP_301"
     }
-  }
-}
-
-# ACM Certificate
-resource "aws_acm_certificate" "main" {
-  provider = aws.region
-
-  domain_name               = "gateway.${var.domain_name}"
-  subject_alternative_names = ["*.gateway.${var.domain_name}"]
-  validation_method         = "DNS"
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_route53_record" "cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => {
-      name  = dvo.resource_record_name
-      type  = dvo.resource_record_type
-      value = dvo.resource_record_value
-    }
-  }
-
-  name    = each.value.name
-  type    = each.value.type
-  zone_id = var.route53_zone_id  # Use the data source instead of a variable
-  records = [each.value.value]
-  ttl     = 60
-}
-
-resource "aws_acm_certificate_validation" "main" {
-  certificate_arn         = aws_acm_certificate.main.arn
-  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
-}
-
-# DNS Record for the ALB
-resource "aws_route53_record" "alb" {
-  provider = aws.region
-
-  zone_id = var.route53_zone_id
-  name    = "gateway.${var.domain_name}"
-  type    = "A"
-
-  alias {
-    name                   = aws_lb.main.dns_name
-    zone_id                = aws_lb.main.zone_id
-    evaluate_target_health = true
   }
 }

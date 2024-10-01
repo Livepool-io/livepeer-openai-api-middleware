@@ -131,7 +131,8 @@ module "compute_ap_northeast_1" {
 module "loadbalancer_us_east_1" {
   source = "./modules/loadbalancer"
   providers = {
-    aws.region = aws.us-east-1
+    aws.region    = aws.us-east-1
+    aws.us-east-1 = aws.us-east-1
   }
   region                     = "us-east-1"
   vpc_id                     = module.networking_us_east_1.vpc_id
@@ -141,12 +142,14 @@ module "loadbalancer_us_east_1" {
   health_check_path          = var.health_check_path
   instance_security_group_id = module.compute_us_east_1.security_group_id
   route53_zone_id            = aws_route53_zone.main.zone_id
+  certificate_arn = aws_acm_certificate_validation.main.certificate_arn
 }
 
 module "loadbalancer_us_west_2" {
   source = "./modules/loadbalancer"
   providers = {
-    aws.region = aws.us-west-2
+    aws.region    = aws.us-west-2
+    aws.us-east-1 = aws.us-east-1
   }
   region                     = "us-west-2"
   vpc_id                     = module.networking_us_west_2.vpc_id
@@ -156,12 +159,14 @@ module "loadbalancer_us_west_2" {
   health_check_path          = var.health_check_path
   instance_security_group_id = module.compute_us_west_2.security_group_id
   route53_zone_id            = aws_route53_zone.main.zone_id
+  certificate_arn = aws_acm_certificate_validation.main.certificate_arn
 }
 
 module "loadbalancer_eu_central_1" {
   source = "./modules/loadbalancer"
   providers = {
-    aws.region = aws.eu-central-1
+    aws.region    = aws.eu-central-1
+    aws.us-east-1 = aws.us-east-1
   }
   region                     = "eu-central-1"
   vpc_id                     = module.networking_eu_central_1.vpc_id
@@ -171,12 +176,14 @@ module "loadbalancer_eu_central_1" {
   health_check_path          = var.health_check_path
   instance_security_group_id = module.compute_eu_central_1.security_group_id
   route53_zone_id            = aws_route53_zone.main.zone_id
+  certificate_arn = aws_acm_certificate_validation.main.certificate_arn
 }
 
 module "loadbalancer_ap_northeast_1" {
   source = "./modules/loadbalancer"
   providers = {
-    aws.region = aws.ap-northeast-1
+    aws.region    = aws.ap-northeast-1
+    aws.us-east-1 = aws.us-east-1
   }
   region                     = "ap-northeast-1"
   vpc_id                     = module.networking_ap_northeast_1.vpc_id
@@ -186,4 +193,5 @@ module "loadbalancer_ap_northeast_1" {
   health_check_path          = var.health_check_path
   instance_security_group_id = module.compute_ap_northeast_1.security_group_id
   route53_zone_id            = aws_route53_zone.main.zone_id
+  certificate_arn = aws_acm_certificate_validation.main.certificate_arn
 }
