@@ -37,9 +37,9 @@ func (g *Gateway) GetModels() map[string]string {
 	return g.defaultModels
 }
 
-func (g *Gateway) PostLlmGenerate(req worker.LlmGenerateFormdataRequestBody) (*http.Response, error) {
+func (g *Gateway) PostLlmGenerate(req worker.GenLLMFormdataRequestBody) (*http.Response, error) {
 	var body bytes.Buffer
-	mw, err := worker.NewLlmGenerateMultipartWriter(&body, req)
+	mw, err := worker.NewLLMMultipartWriter(&body, req)
 	if err != nil {
 		return nil, err
 	}
