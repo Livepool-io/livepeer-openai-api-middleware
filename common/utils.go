@@ -35,9 +35,9 @@ func historyFromMessages(messages []models.OpenAIMessage) (*string, error) {
 	return &historyStr, nil
 }
 
-func TransformRequest(openAIReq models.OpenAIRequest) (*worker.LlmGenerateFormdataRequestBody, error) {
+func TransformRequest(openAIReq models.OpenAIRequest) (*worker.GenLLMFormdataRequestBody, error) {
 
-	llmReq := worker.LlmGenerateFormdataRequestBody{
+	llmReq := worker.GenLLMFormdataRequestBody{
 		ModelId: &openAIReq.Model,
 		Prompt:  openAIReq.Messages[len(openAIReq.Messages)-1].Content,
 		Stream:  &openAIReq.Stream,
@@ -67,13 +67,13 @@ func TransformRequest(openAIReq models.OpenAIRequest) (*worker.LlmGenerateFormda
 	return &llmReq, nil
 }
 
-func TransformResponse(req *worker.LlmGenerateFormdataRequestBody, resp *http.Response) (*models.OpenAIResponse, error) {
+func TransformResponse(req *worker.GenLLMFormdataRequestBody, resp *http.Response) (*models.OpenAIResponse, error) {
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	var res *worker.LlmResponse
+	var res *worker.LLMResponse
 	if err := json.Unmarshal(data, &res); err != nil {
 		return nil, err
 	}

@@ -22,3 +22,15 @@ go.work
 
 # DS Store
 .DS_Store
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraformrc
+terraform.rc
+.terraform.lock.hcl
+
+UTC--2024-09-25T15-09-07Z--8b54af7989407F3429607c7b609c3100B0E33278
