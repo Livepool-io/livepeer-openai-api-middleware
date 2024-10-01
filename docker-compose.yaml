@@ -4,7 +4,7 @@ services:
   livepeer:
     image: livepool/go-livepool:llm
     networks:
-      - hive-gateway-network
+      - chatlpt-network
     volumes:
       - ./lpData:/root/.lpData/keystore
     command: >
@@ -13,7 +13,7 @@ services:
   api:
     image: livepool/openai-api:latest
     networks:
-      - hive-gateway-network
+      - chatlpt-network
     depends_on:
       - livepeer
     command: --gateway http://livepeer:8935
@@ -21,7 +21,7 @@ services:
   nginx:
     image: nginx:alpine
     networks:
-      - hive-gateway-network
+      - chatlpt-network
     ports:
       - "80:80"
     volumes:
@@ -30,5 +30,5 @@ services:
       - api
 
 networks:
-  hive-gateway-network:
+  chatlpt-network:
     driver: bridge
