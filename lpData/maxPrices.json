@@ -1,0 +1,16 @@
+{
+    "capabilities-prices": [
+        {
+            "pipeline": "llm",
+            "model_id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+            "price_per_unit": 20000000,
+            "pixels_per_unit": 1000000
+        },
+        {
+            "pipeline": "llm",
+            "model_id": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+            "price_per_unit": 80000000,
+            "pixels_per_unit": 1000000
+        }
+    ]
+}

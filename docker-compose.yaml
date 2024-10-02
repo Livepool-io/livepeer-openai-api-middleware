@@ -1,17 +1,14 @@
-version: '3'
-
 services:
   livepeer:
-    image: livepool/go-livepool:llm
+    image: livepeer/go-livepeer:v0.7.9-ai.2
     networks:
       - chatlpt-network
     volumes:
-      - ./lpData:/root/.lpData/keystore
-    command: >
-      livepeer -gateway -mainnet -httpAddr 0.0.0.0:8935 -httpIngest -v 6 -ethPassword /root/.lpData/password.txt
+      - ./lpData:/root/.lpData/
+    command: '-config /root/.lpData/livepeer.conf'
 
   api:
-    image: livepool/openai-api:latest
+    image: livepool/openai-api:llm
     networks:
       - chatlpt-network
     depends_on:
