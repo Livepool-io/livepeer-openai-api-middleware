@@ -25,7 +25,7 @@ type OpenAIResponse struct {
 	Created int64    `json:"created"`
 	Model   string   `json:"model"`
 	Choices []Choice `json:"choices"`
-	Usage   Usage    `json:"usage"`
+	Usage   *Usage   `json:"usage"`
 }
 
 type OpenAIStreamResponse struct {
@@ -34,6 +34,7 @@ type OpenAIStreamResponse struct {
 	Created int64          `json:"created"`
 	Model   string         `json:"model"`
 	Choices []StreamChoice `json:"choices"`
+	Usage   *Usage         `json:"usage,omitempty"`
 }
 
 type StreamChoice struct {

@@ -92,22 +92,20 @@ func TransformResponse(req *worker.GenLLMFormdataRequestBody, resp *http.Respons
 				FinishReason: "stop",
 			},
 		},
-		Usage: models.Usage{
-			PromptTokens:     len(req.Prompt), // TODO: count actual tokens
-			CompletionTokens: res.TokensUsed,
-			TotalTokens:      res.TokensUsed + len(req.Prompt), // Adjust if you have prompt tokens count
+		Usage: &models.Usage{
+			TotalTokens: res.TokensUsed, // TokensUsed already includes prompt tokens
 		},
 	}
 
 	return openAIResp, nil
 }
 
-func TransformStreamResponse(chunk worker.LlmStreamChunk, streamID string) (models.OpenAIStreamResponse, error) {
+func TransformStreamResponse(chunk worker.LlmStreamChunk, req *worker.GenLLMFormdataRequestBody, streamID string) (models.OpenAIStreamResponse, error) {
 	openAIResp := models.OpenAIStreamResponse{
 		ID:      streamID,
-		Object:  "text_completion",
+		Object:  "chat.completion.chunk",
 		Created: time.Now().Unix(),
-		Model:   "gpt-3.5-turbo-0301", // You might want to make this configurable
+		Model:   *req.ModelId,
 		Choices: []models.StreamChoice{
 			{
 				Index: 0,
@@ -121,12 +119,16 @@ func TransformStreamResponse(chunk worker.LlmStreamChunk, streamID string) (mode
 
 	if chunk.Done {
 		openAIResp.Choices[0].FinishReason = "stop"
+		// Only include usage information in the final chunk
+		openAIResp.Usage = &models.Usage{
+			TotalTokens: chunk.TokensUsed, // TokensUsed already includes prompt tokens
+		}
 	}
 
 	return openAIResp, nil
 }
 
-func HandleStreamingResponse(ctx context.Context, resp *http.Response) (<-chan models.OpenAIStreamResponse, <-chan error) {
+func HandleStreamingResponse(ctx context.Context, req *worker.BodyGenLLM, resp *http.Response) (<-chan models.OpenAIStreamResponse, <-chan error) {
 	streamChan := make(chan models.OpenAIStreamResponse)
 	errChan := make(chan error, 1) // Buffered channel to avoid goroutine leak
 
@@ -152,7 +154,7 @@ func HandleStreamingResponse(ctx context.Context, resp *http.Response) (<-chan m
 				data := strings.TrimPrefix(line, "data: ")
 				if data == "[DONE]" {
 					chunk := worker.LlmStreamChunk{Chunk: "DONE", Done: true, TokensUsed: totalTokens}
-					openAIChunk, err := TransformStreamResponse(chunk, streamID)
+					openAIChunk, err := TransformStreamResponse(chunk, req, streamID)
 					if err != nil {
 						errChan <- fmt.Errorf("error converting final chunk: %w", err)
 						return
@@ -168,7 +170,7 @@ func HandleStreamingResponse(ctx context.Context, resp *http.Response) (<-chan m
 				}
 
 				totalTokens += chunk.TokensUsed
-				openAIChunk, err := TransformStreamResponse(chunk, streamID)
+				openAIChunk, err := TransformStreamResponse(chunk, req, streamID)
 				if err != nil {
 					errChan <- fmt.Errorf("error converting chunk: %w", err)
 					return

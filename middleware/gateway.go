@@ -1,19 +1,16 @@
 package middleware
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/golang/glog"
 	"github.com/livepeer/ai-worker/worker"
 	"github.com/livepool-io/openai-middleware/common"
-	"github.com/livepool-io/openai-middleware/models"
 )
 
 type Gateway struct {
@@ -53,69 +50,8 @@ func (g *Gateway) PostLlmGenerate(req worker.GenLLMFormdataRequestBody) (*http.R
 	return client.Do(httpReq)
 }
 
-func HandleStreamingResponse(ctx context.Context, resp *http.Response) (<-chan models.OpenAIStreamResponse, <-chan error) {
-	streamChan := make(chan models.OpenAIStreamResponse)
-	errChan := make(chan error, 1) // Buffered channel to avoid goroutine leak
-
-	go func() {
-		defer close(streamChan)
-		defer close(errChan)
-
-		streamID := common.GenerateUniqueID()
-		scanner := bufio.NewScanner(resp.Body)
-		var totalTokens int
-
-		for scanner.Scan() {
-			select {
-			case <-ctx.Done():
-				errChan <- ctx.Err()
-				return
-			default:
-				line := scanner.Text()
-				if !strings.HasPrefix(line, "data: ") {
-					continue
-				}
-
-				data := strings.TrimPrefix(line, "data: ")
-				if data == "[DONE]" {
-					chunk := worker.LlmStreamChunk{Chunk: "DONE", Done: true, TokensUsed: totalTokens}
-					openAIChunk, err := common.TransformStreamResponse(chunk, streamID)
-					if err != nil {
-						errChan <- fmt.Errorf("error converting final chunk: %w", err)
-						return
-					}
-					streamChan <- openAIChunk
-					return
-				}
-
-				var chunk worker.LlmStreamChunk
-				if err := json.Unmarshal([]byte(data), &chunk); err != nil {
-					errChan <- fmt.Errorf("error unmarshalling SSE chunk: %w", err)
-					continue
-				}
-
-				totalTokens += chunk.TokensUsed
-				openAIChunk, err := common.TransformStreamResponse(chunk, streamID)
-				if err != nil {
-					errChan <- fmt.Errorf("error converting chunk: %w", err)
-					return
-				}
-
-				streamChan <- openAIChunk
-			}
-		}
-
-		if err := scanner.Err(); err != nil {
-			errChan <- fmt.Errorf("error reading SSE stream: %w", err)
-		}
-	}()
-
-	return streamChan, errChan
-}
-
-func (g *Gateway) HandleStreamingResponse(w http.ResponseWriter, r *http.Request, resp *http.Response) error {
-	ctx := r.Context()
-	streamChan, errChan := common.HandleStreamingResponse(ctx, resp)
+func (g *Gateway) HandleStreamingResponse(ctx context.Context, req *worker.BodyGenLLM, w http.ResponseWriter, resp *http.Response) error {
+	streamChan, errChan := common.HandleStreamingResponse(ctx, req, resp)
 
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
