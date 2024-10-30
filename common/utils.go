@@ -92,7 +92,7 @@ func TransformResponse(req *worker.GenLLMFormdataRequestBody, resp *http.Respons
 				FinishReason: "stop",
 			},
 		},
-		Usage: models.Usage{
+		Usage: &models.Usage{
 			TotalTokens: res.TokensUsed, // TokensUsed already includes prompt tokens
 		},
 	}
@@ -120,7 +120,7 @@ func TransformStreamResponse(chunk worker.LlmStreamChunk, req *worker.GenLLMForm
 	if chunk.Done {
 		openAIResp.Choices[0].FinishReason = "stop"
 		// Only include usage information in the final chunk
-		openAIResp.Usage = models.Usage{
+		openAIResp.Usage = &models.Usage{
 			TotalTokens: chunk.TokensUsed, // TokensUsed already includes prompt tokens
 		}
 	}
