@@ -4,13 +4,13 @@ FROM golang:1.21 AS builder
 # Set the working directory inside the container
 WORKDIR /app
 
-# Download all the dependencies
-RUN go mod download
-
 # prefetch the binaries, so that they will be cached and not downloaded on each change
 RUN go run github.com/steebchen/prisma-client-go prefetch
 
 COPY . ./
+
+# Download all the dependencies
+RUN go mod download
 
 # Generate the Prisma Client Go client
 RUN go generate ./db
