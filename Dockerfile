@@ -4,14 +4,16 @@ FROM golang:1.21 AS builder
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy from local
-COPY . .
+COPY . ./
 
 # Download all the dependencies
 RUN go mod download
 
+# Generate the Prisma Client Go client
+RUN go generate ./db
+
 # Build the Go application with CGO disabled and statically linked
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o api .
 
 # Use a minimal base image for running the application
 FROM alpine:latest  
@@ -28,4 +30,4 @@ COPY --from=builder /app/app .
 EXPOSE 8080
 
 # Set the entry point to run the binary
-ENTRYPOINT ["./app"]
+ENTRYPOINT ["./api"]

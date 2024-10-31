@@ -1,0 +1,104 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator db {
+  provider = "go run github.com/steebchen/prisma-client-go"
+  output   = "./"
+}
+
+model APIKey {
+  id              String       @id
+  key             String       @unique
+  name            String?
+  userId          String
+  type            ApiKeyType   @default(CUSTOMER)
+  dailyTokenUsage Int          @default(0)
+  usageResetAt    DateTime     @default(now())
+  createdAt       DateTime     @default(now())
+  lastUsedAt      DateTime     @default(now())
+  isActive        Boolean      @default(true)
+  User            User         @relation(fields: [userId], references: [id])
+  DailyUsage      DailyUsage[]
+
+  @@index([key, isActive])
+  @@index([userId, lastUsedAt])
+  @@index([userId, type])
+}
+
+model Conversation {
+  id        String    @id
+  title     String
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  User      User      @relation(fields: [userId], references: [id])
+  Message   Message[]
+
+  @@index([userId, updatedAt])
+}
+
+model DailyUsage {
+  id         String   @id @default(cuid())
+  date       DateTime @db.Date
+  tokenUsage Int      @default(0)
+  userId     String
+  apiKeyId   String?
+  createdAt  DateTime @default(now())
+  APIKey     APIKey?  @relation(fields: [apiKeyId], references: [id])
+  User       User     @relation(fields: [userId], references: [id])
+
+  @@unique([date, userId, apiKeyId])
+  @@index([apiKeyId, date])
+  @@index([userId, date])
+}
+
+model Message {
+  id             String       @id
+  orderIndex     Int          @default(autoincrement())
+  content        String
+  role           MessageRole
+  conversationId String
+  createdAt      DateTime     @default(now())
+  Conversation   Conversation @relation(fields: [conversationId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([conversationId, orderIndex])
+}
+
+model User {
+  id              String         @id
+  name            String?
+  email           String?        @unique
+  image           String?
+  loginType       String?
+  dailyTokenUsage Int            @default(0)
+  usageResetAt    DateTime       @default(now())
+  tier            UserTier       @default(FREE)
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime
+  APIKey          APIKey[]
+  Conversation    Conversation[]
+  DailyUsage      DailyUsage[]
+
+  @@index([email])
+}
+
+enum ApiKeyType {
+  MASTER
+  CUSTOMER
+}
+
+enum MessageRole {
+  system
+  user
+  assistant
+}
+
+enum UserTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
