@@ -189,3 +189,23 @@ type LlmStreamChunk struct {
  Done       bool   `json:"done,omitempty"`
 }
 ```
+
+## Prisma & Postgres
+
+1. Install the auto-generated query builder for go
+
+```sh
+go get github.com/steebchen/prisma-client-go
+```
+
+To generate the schema from an existing database, specify the DB source in our `schema.prisma` file and pull the schema
+
+```sh
+go run github.com/steebchen/prisma-client-go db pull
+```
+
+Once we have our schema we can generate our client bindings:
+
+```sh
+make db
+```
